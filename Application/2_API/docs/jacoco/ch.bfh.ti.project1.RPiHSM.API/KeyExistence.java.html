@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>KeyExistence.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-API</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.API</a> &gt; <span class="el_source">KeyExistence.java</span></div><h1>KeyExistence.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.API;
+
+import javax.naming.OperationNotSupportedException;
+
+/**
+ * &lt;h1&gt;KeyExistence&lt;/h1&gt;
+ * Ask the IoT application using the {@link SerialHelperI} to check fi a key set with the given name exists.
+ */
+public final class KeyExistence {
+
+    private SerialHelperI serialHelper;
+    private String userPath;
+    private String name;
+
+    /**
+     * Sets {@link SerialHelperI} instance to communicate with the IoT application and the key existence parameters.
+     *
+     * @param serialHelper an instance of {@link SerialHelperI}
+     * @param userPath     home path of the IoT application user
+     * @param name         name of the key set
+     */
+<span class="fc" id="L22">    public KeyExistence(SerialHelperI serialHelper, String userPath, String name) {</span>
+<span class="fc" id="L23">        this.serialHelper = serialHelper;</span>
+<span class="fc" id="L24">        this.name = name;</span>
+<span class="fc" id="L25">        this.userPath = userPath;</span>
+<span class="fc" id="L26">    }</span>
+
+    /**
+     * Ask to the IoT application if the key set with the {@link CreateKey#name} exists.
+     *
+     * @return true if the key set exists, false if the {@link KeyExistence#name} is empty or the key set does not exist
+     * @throws OperationNotSupportedException if an error occurs in the {@link SerialHelperI}
+     */
+    public boolean keyexist() throws OperationNotSupportedException {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if(name.isEmpty()) return false;</span>
+<span class="fc" id="L36">        serialHelper.writeLine(String.join(&quot; &quot;, new String[]{Constants.CHECK, userPath, name}));</span>
+
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (!serialHelper.status()) {</span>
+<span class="fc" id="L39">            return false;</span>
+        }
+<span class="fc" id="L41">        return true;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

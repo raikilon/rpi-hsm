@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>IoT.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-IoT</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.IoT</a> &gt; <span class="el_source">IoT.java</span></div><h1>IoT.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.IoT;
+
+
+import ch.bfh.ti.project1.RPiHSM.IoT.Commands.CommandFactory;
+import ch.bfh.ti.project1.RPiHSM.IoT.Commands.CommandI;
+import ch.bfh.ti.project1.RPiHSM.IoT.Commands.SerialHelperI;
+import com.pi4j.io.gpio.*;
+
+/**
+ * &lt;h1&gt;IoT&lt;/h1&gt;
+ * HSM simulation on a Raspberry Pi 3.
+ * The crypto functions are implemented with the help of &lt;a href=&quot;https://github.com/google/keyczar&quot;&gt; Keyczar &lt;/a&gt;.
+ *
+ * @author Noli Manzoni, Sandro Tiago Carlao
+ * @version 0.1
+ * @since 13.04.2017
+ */
+<span class="nc" id="L18">public class IoT {</span>
+    /**
+     * The serial helper read the parameters (divided by a space character) and split them.
+     * The first parameter is given to the {@link CommandFactory} that return a {@link CommandI} object.
+     * The the relative command is executed.
+     * (The serial helper is created here and it is moved in all the application
+     * so that we must not use the Singleton design pattern).
+     * @see &lt;a href=&quot;https://www.michaelsafyan.com/tech/design/patterns/singleton&quot;&gt; Signleton Anti-Pattern &lt;/a&gt;
+     *
+     * @param args no parameters are given to the application
+     */
+    public static void main(String[] args) {
+
+
+
+        // create gpio controller
+<span class="nc" id="L34">        GpioController gpio = GpioFactory.getInstance();</span>
+
+        // provision gpio pin #01 as an output pin and turn on
+<span class="nc" id="L37">        GpioPinDigitalOutput green = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04, &quot;Green&quot;, PinState.HIGH);</span>
+<span class="nc" id="L38">        GpioPinDigitalOutput yellow =  gpio.provisionDigitalOutputPin(RaspiPin.GPIO_05, &quot;Yellow&quot;, PinState.LOW);</span>
+        // set shutdown state for this pin
+<span class="nc" id="L40">        green.setShutdownOptions(true, PinState.LOW);</span>
+<span class="nc" id="L41">        yellow.setShutdownOptions(true, PinState.LOW);</span>
+
+<span class="nc" id="L43">        SerialHelperI serialHelper = new SerialHelper(); //initialisation of the serial helper</span>
+
+        while (true) { // this loop is not a busy one -&gt; it does not use resources. It waits (readLine) for a command and when it is executed it waits for another one.
+
+<span class="nc" id="L47">            String commandRead = serialHelper.readLine(); //read the command from the command line (wait for  input)</span>
+<span class="nc" id="L48">            yellow.blink(500);//blink every 0.5 s</span>
+<span class="nc" id="L49">            String[] commands = commandRead.split(&quot; &quot;);</span>
+
+            //Create new convenient factory to generate a instance of ICommand
+<span class="nc" id="L52">            CommandFactory cmFactory = new CommandFactory();</span>
+
+            //Ask for a command giving the cmd arg
+<span class="nc" id="L55">            CommandI cm = cmFactory.getCommand(commands, serialHelper);</span>
+
+            //Execute command
+<span class="nc" id="L58">            cm.execute();</span>
+<span class="nc" id="L59">            yellow.blink(0);//stop blink</span>
+<span class="nc" id="L60">            yellow.low(); // turn off</span>
+<span class="nc" id="L61">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

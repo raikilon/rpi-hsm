@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>PublicKey.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-IoT</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.IoT.Commands</a> &gt; <span class="el_source">PublicKey.java</span></div><h1>PublicKey.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.IoT.Commands;
+
+import ch.bfh.ti.project1.RPiHSM.IoT.Utils.Constants;
+import ch.bfh.ti.project1.RPiHSM.IoT.Utils.JSONUtils;
+import org.apache.commons.io.FileUtils;
+import org.keyczar.KeyczarTool;
+
+import java.io.File;
+import java.io.IOException;
+
+/**
+ * &lt;h1&gt;PublicKey&lt;/h1&gt;
+ * Exports all the public keys of a RSA or DSA key set by using the &lt;a href=&quot;https://github.com/google/keyczar/wiki/KeyczarTool&quot;&gt;KeyczarTool&lt;/a&gt;.
+ */
+public class PublicKey implements CommandI {
+
+    private SerialHelperI serialHelper;
+    private String keyPath;
+
+    /**
+     * Parses the received parameters.
+     *
+     * @param commands parameters for the public keys exportation ([0] userPath, [1] name)
+     * @param serialHelper an instance of {@link SerialHelperI}
+     */
+<span class="fc" id="L26">    public PublicKey(String[] commands, SerialHelperI serialHelper) {</span>
+<span class="fc" id="L27">        this.serialHelper = serialHelper;</span>
+<span class="fc" id="L28">        keyPath = commands[0] + Constants.DIRECTORY + commands[1];</span>
+<span class="fc" id="L29">    }</span>
+
+
+
+    /**
+     * Exports all the public keys of the given key set using the &lt;a href=&quot;https://github.com/google/keyczar/wiki/KeyczarTool&quot;&gt;KeyczarTool&lt;/a&gt;.
+     * If the public key destination folder exists it is deleted than it is recreate (to be sure is empty).Then the
+     *  &lt;a href=&quot;https://github.com/google/keyczar/wiki/KeyczarTool&quot;&gt;KeyczarTool&lt;/a&gt; command is execute.
+     * If there are errors the {@link SerialHelperI#error()} is called otherwise {@link SerialHelperI#ready()}. Once the keys are exported
+     * the number of the keys is writed using {@link SerialHelperI#writeLine(String)} then the files are send one by one with the {@link SerialHelperI#sendFile(String)}.
+     */
+    @Override
+    public void execute() {
+
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (JSONUtils.checkAsymmetricSet(keyPath)) {// check if the key set is RSA or DSA</span>
+            //CLEAN FOLDER
+<span class="fc" id="L45">            File pubkeys = new File(keyPath + &quot;//pubkeys&quot;);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (pubkeys.exists()) {</span>
+                try {
+<span class="fc" id="L48">                    FileUtils.deleteDirectory(pubkeys);</span>
+<span class="nc" id="L49">                } catch (IOException e) {</span>
+<span class="nc" id="L50">                    serialHelper.error(); //will never happen -&gt; folder existence is already checked</span>
+<span class="fc" id="L51">                }</span>
+            }
+<span class="fc" id="L53">            pubkeys.mkdirs();</span>
+
+<span class="fc" id="L55">            KeyczarTool.main(new String[]{&quot;pubkey&quot;, &quot;--location=&quot; + keyPath, &quot;--destination=&quot; + pubkeys.getAbsolutePath()});</span>
+
+
+<span class="fc" id="L58">            serialHelper.ready();</span>
+
+<span class="fc" id="L60">            File[] files = pubkeys.listFiles(); // list of files</span>
+
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            if (files.length &gt; 1) {//there will be always the meta file</span>
+<span class="fc" id="L63">                serialHelper.ready();</span>
+
+<span class="fc" id="L65">                serialHelper.writeLine(Integer.toString(files.length)); // send the files count</span>
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">                for (int i = 0; i &lt; files.length; i++) {</span>
+<span class="fc" id="L68">                    serialHelper.writeLine(files[i].getName());</span>
+<span class="fc" id="L69">                    serialHelper.sendFile(files[i].getAbsolutePath());</span>
+                }
+            } else {
+<span class="fc" id="L72">                serialHelper.error(); //no key are present</span>
+            }
+
+
+<span class="fc" id="L76">        } else {</span>
+<span class="fc" id="L77">            serialHelper.error(); // key set is not RSA or DSA</span>
+        }
+
+<span class="fc" id="L80">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

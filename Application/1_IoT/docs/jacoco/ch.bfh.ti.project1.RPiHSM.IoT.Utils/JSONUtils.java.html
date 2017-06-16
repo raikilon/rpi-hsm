@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>JSONUtils.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-IoT</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.IoT.Utils</a> &gt; <span class="el_source">JSONUtils.java</span></div><h1>JSONUtils.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.IoT.Utils;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Iterator;
+
+/**
+ * &lt;h1&gt;JSONUtils&lt;/h1&gt;
+ * Helper that performs actions on JSON files.
+ */
+<span class="nc" id="L17">public class JSONUtils {</span>
+
+    /**
+     * Check the status of the given key version by looking in the meta file of the given key set.
+     *
+     * @param keySetPath key set path
+     * @param version    key version
+     * @param status1    first status to check
+     * @param status2    second status to check
+     * @return true if the key has one of the given status otherwise false
+     */
+    public static boolean checkKeySetStatus(String keySetPath, int version, String status1, String status2) {
+
+<span class="fc" id="L30">        Object obj = JSONUtils.readJSONFile(keySetPath);</span>
+
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if (obj == null) return false;</span>
+
+<span class="fc" id="L34">        JSONObject jsonObject = (JSONObject) obj;</span>
+
+<span class="fc" id="L36">        JSONArray versionList = (JSONArray) jsonObject.get(&quot;versions&quot;);</span>
+
+        JSONObject versionObject;
+
+<span class="fc" id="L40">        Iterator&lt;JSONObject&gt; it = versionList.iterator();</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        while (it.hasNext()) {</span>
+
+<span class="fc" id="L43">            versionObject = it.next();</span>
+
+            //is a long and cannot be casted to a int ---- version is implicit converted in long without information loss
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">            if (version == (Long) versionObject.get(&quot;versionNumber&quot;)) {</span>
+<span class="pc bpc" id="L47" title="1 of 4 branches missed.">                if (versionObject.get(&quot;status&quot;).equals(status1) || (versionObject.get(&quot;status&quot;).equals(status2))) {</span>
+<span class="fc" id="L48">                    return true;</span>
+                }
+            }
+        }
+<span class="fc" id="L52">        return false;</span>
+    }
+
+    /**
+     * Check if a key set is asymmetric (RSA or DSA) by checking in the meta file.
+     *
+     * @param keySetPath the key set path
+     * @return true if the key set is asymmetric otherwise false
+     */
+    public static boolean checkAsymmetricSet(String keySetPath) {
+
+<span class="fc" id="L63">        Object obj = JSONUtils.readJSONFile(keySetPath);</span>
+
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">        if (obj == null) return false;</span>
+
+<span class="fc" id="L67">        JSONObject jsonObject = (JSONObject) obj;</span>
+
+<span class="fc" id="L69">        String type = (String) jsonObject.get(&quot;type&quot;);</span>
+
+<span class="pc bpc" id="L71" title="1 of 4 branches missed.">        if (type.equals(Constants.RSA_PRIV) || type.equals(Constants.DSA_PRIV)) {</span>
+<span class="fc" id="L72">            return true;</span>
+        } else {
+<span class="fc" id="L74">            return false;</span>
+        }
+    }
+
+    /**
+     * Read the given key set meta file and return a JSONObject.
+     *
+     * @param keySetPath the key set path
+     * @return the meta file JSONObject
+     */
+    private static Object readJSONFile(String keySetPath) {
+
+<span class="fc" id="L86">        File keySet = new File(keySetPath + &quot;//meta&quot;);</span>
+
+<span class="fc" id="L88">        JSONParser parser = new JSONParser();</span>
+
+        try {
+<span class="fc" id="L91">            FileReader fr = new FileReader(keySet);</span>
+<span class="fc" id="L92">            Object obj = parser.parse(fr);</span>
+<span class="fc" id="L93">            fr.close();</span>
+<span class="fc" id="L94">            return obj;</span>
+<span class="nc" id="L95">        } catch (ParseException | IOException e) {</span>
+<span class="nc" id="L96">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

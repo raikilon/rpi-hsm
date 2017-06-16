@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CommandFactory.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-IoT</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.IoT.Commands</a> &gt; <span class="el_source">CommandFactory.java</span></div><h1>CommandFactory.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.IoT.Commands;
+
+
+import ch.bfh.ti.project1.RPiHSM.IoT.Utils.Constants;
+
+import java.util.Arrays;
+
+/**
+ * &lt;h1&gt;CommandFactory&lt;/h1&gt;
+ * Creates a {@link CommandI} instance.
+ * This factory follows the Command Factory design pattern.
+ */
+<span class="fc" id="L13">public class CommandFactory {</span>
+
+
+    /**
+     * Create a {@link CommandI} instance by parsing the input value.
+     *
+     * @param commands     command parameters
+     * @param serialHelper an instance of {@link SerialHelperI}
+     * @return a {@link CommandI} instance
+     */
+    public CommandI getCommand(String[] commands, SerialHelperI serialHelper) {
+
+<span class="fc" id="L25">        String command = commands[0].trim(); // parameter to decide which ICommand is return</span>
+
+<span class="fc" id="L27">        String[] parameters = Arrays.copyOfRange(commands, 1, commands.length); //deleting first element</span>
+
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (command.equals(Constants.CREATEKEYSET)) {</span>
+<span class="fc" id="L30">            return new CreateKeySet(parameters, serialHelper);</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        } else if (command.equals(Constants.CREATEKEY)) {</span>
+<span class="fc" id="L32">            return new CreateKey(parameters, serialHelper);</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        } else if (command.equals(Constants.LOGIN)) {</span>
+<span class="fc" id="L34">            return new Login(parameters, serialHelper);</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        } else if (command.equals(Constants.CHECK)) {</span>
+<span class="fc" id="L36">            return new KeyExistence(parameters, serialHelper);</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        } else if (command.equals(Constants.DECRYPT)) {</span>
+<span class="fc" id="L38">            return new Decrypt(parameters, serialHelper);</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        } else if (command.equals(Constants.ENCRYPT)) {</span>
+<span class="fc" id="L40">            return new Encrypt(parameters, serialHelper);</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        } else if (command.equals(Constants.SIGN)) {</span>
+<span class="fc" id="L42">            return new Sign(parameters, serialHelper);</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        } else if (command.equals(Constants.VERIFY)) {</span>
+<span class="fc" id="L44">            return new Verify(parameters, serialHelper);</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        } else if (command.equals(Constants.REVOKE)) {</span>
+<span class="fc" id="L46">            return new RevokeKey(parameters, serialHelper);</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        } else if (command.equals(Constants.DEMOTE)) {</span>
+<span class="fc" id="L48">            return new DemoteKey(parameters, serialHelper);</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        } else if (command.equals(Constants.PROMOTE)) {</span>
+<span class="fc" id="L50">            return new PromoteKey(parameters, serialHelper);</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        } else if (command.equals(Constants.PUBLICKEY)) {</span>
+<span class="fc" id="L52">            return new PublicKey(parameters, serialHelper);</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        } else if (command.equals(Constants.DELETE)) {</span>
+<span class="fc" id="L54">            return new DeleteKeySet(parameters, serialHelper);</span>
+        } else {
+<span class="nc" id="L56">            return null; //this must not happen</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

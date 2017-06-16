@@ -1,0 +1,16 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,EncryptDecrypt,0,98,0,4,0,19,0,6,0,4
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,SerialHelper,262,0,24,0,64,0,21,0,9,0
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,Login,0,51,0,2,0,12,0,4,0,3
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,CreateKey,6,89,4,8,0,17,4,5,0,3
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,PublicKey,0,101,0,8,0,20,0,6,0,2
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,Verify,0,74,0,4,0,17,0,4,0,2
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,KeyExistence,0,47,0,4,0,10,0,4,0,2
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,CreateKeySet,0,45,0,2,0,8,0,3,0,2
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,KeyStatus,0,127,0,4,0,19,0,7,0,5
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,Constants,3,0,0,0,1,0,1,0,1,0
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,Sign,0,71,0,4,0,16,0,4,0,2
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API,DeleteKeySet,0,37,0,2,0,8,0,3,0,2
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API.Exception,KeySetNotAsymmetricException,0,3,0,0,0,2,0,1,0,1
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API.Exception,KeySetIsEmptyException,0,3,0,0,0,2,0,1,0,1
+RPiHSM-API,ch.bfh.ti.project1.RPiHSM.API.Exception,SerialPortException,3,0,0,0,2,0,1,0,1,0

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SerialHelper.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-IoT</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.IoT</a> &gt; <span class="el_source">SerialHelper.java</span></div><h1>SerialHelper.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.IoT;
+
+import ch.bfh.ti.project1.RPiHSM.IoT.Commands.SerialHelperI;
+import ch.bfh.ti.project1.RPiHSM.IoT.Utils.Constants;
+import com.pi4j.io.gpio.*;
+import com.pi4j.io.gpio.exception.UnsupportedBoardType;
+import com.pi4j.io.serial.*;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+
+/**
+ * &lt;h1&gt;SerialHelper&lt;/h1&gt;
+ * Helper class that implement all {@link SerialHelperI} functions for the serial port.
+ */
+<span class="nc bnc" id="L20" title="All 2 branches missed.">public final class SerialHelper implements SerialHelperI {</span>
+
+    private Serial serialPort;
+    private InputStream in;
+    private OutputStream out;
+    private GpioController gpio; //GPIO controller
+    private GpioPinDigitalOutput red; //red led
+    /**
+     * Creates a console object and tries to connect to the serial port.
+     * If a error occurs the program is terminated.
+     */
+<span class="nc" id="L31">    public SerialHelper() {</span>
+<span class="nc" id="L32">        gpio = GpioFactory.getInstance();</span>
+<span class="nc" id="L33">        red = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_06, &quot;Red&quot;, PinState.LOW);</span>
+<span class="nc" id="L34">        connect();</span>
+<span class="nc" id="L35">    }</span>
+
+
+    /**
+     * Detects the port that is connected with the serial cable and
+     * it establishes the connection with a speed of 115200 bits per seconds.
+     * If some errors occur the application is closed.
+     */
+    private void connect() {
+<span class="nc" id="L44">        serialPort = SerialFactory.createInstance();</span>
+
+        try {
+            // create serial config object
+<span class="nc" id="L48">            SerialConfig config = new SerialConfig();</span>
+
+<span class="nc" id="L50">            config.device(SerialPort.getDefaultPort())</span>
+<span class="nc" id="L51">                    .baud(Baud._115200)</span>
+<span class="nc" id="L52">                    .dataBits(DataBits._8)</span>
+<span class="nc" id="L53">                    .parity(Parity.NONE)</span>
+<span class="nc" id="L54">                    .stopBits(StopBits._1)</span>
+<span class="nc" id="L55">                    .flowControl(FlowControl.NONE);</span>
+
+<span class="nc" id="L57">            serialPort.open(config);</span>
+<span class="nc" id="L58">            in = serialPort.getInputStream();</span>
+<span class="nc" id="L59">            out = serialPort.getOutputStream();</span>
+<span class="nc" id="L60">        } catch (IOException | UnsupportedBoardType | InterruptedException ex) {</span>
+<span class="nc" id="L61">            red.high();</span>
+<span class="nc" id="L62">            System.exit(-1); // the led stays turned on</span>
+<span class="nc" id="L63">        }</span>
+<span class="nc" id="L64">    }</span>
+
+    @Override
+    /**
+     * Sends a code 200 over the serial port.
+     * This message means all has been correctly executed.
+     */
+    public void ready() {
+<span class="nc" id="L72">        writeLine(Constants.READY);</span>
+<span class="nc" id="L73">    }</span>
+
+    @Override
+    /**
+     * Sends a code 600 over the serial port.
+     * The message means an error is occurred.
+     */
+    public void error() {
+<span class="nc" id="L81">        red.blink(500,5000);//blink red for 10 s every 0.5 s</span>
+<span class="nc" id="L82">        writeLine(Constants.ERROR);</span>
+<span class="nc" id="L83">    }</span>
+
+    @Override
+    /**
+     * Sends a file over the serial port.
+     * Uses the {@link SerialHelper} {@link SerialHelper#writeLine()} and {@link SerialHelper#write()} methods.
+     */
+    public void sendFile(byte[] data) {
+<span class="nc" id="L91">        writeLine(Integer.toString(data.length));</span>
+<span class="nc" id="L92">        write(data);</span>
+<span class="nc" id="L93">    }</span>
+
+    @Override
+    /**
+     * Sends a file over the serial port.
+     * Uses the {@link SerialHelper} writeLine and write methods.
+     * If an error occurs the {@link SerialHelper#error()} method is used.
+     */
+    public void sendFile(String path) {
+
+<span class="nc" id="L103">        byte[] fileBytes = new byte[0];</span>
+
+        try {
+<span class="nc" id="L106">            fileBytes = Files.readAllBytes(Paths.get(path));</span>
+<span class="nc" id="L107">        } catch (IOException e) {</span>
+<span class="nc" id="L108">            error();</span>
+<span class="nc" id="L109">        }</span>
+
+<span class="nc" id="L111">        writeLine(Integer.toString(fileBytes.length));</span>
+
+<span class="nc" id="L113">        write(fileBytes);</span>
+<span class="nc" id="L114">    }</span>
+
+    @Override
+    /**
+     * Reads a file from the serial port.
+     * If an error occurs the {@link SerialHelper#error()} method is used.
+     */
+    public byte[] readFile() {
+
+<span class="nc" id="L123">        String input = readLine();</span>
+
+<span class="nc" id="L125">        int length = Integer.parseInt(input);</span>
+
+<span class="nc" id="L127">        byte[] temp = new byte[length];</span>
+
+        try {
+
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            for (int i = 0; i &lt; length; i++) {</span>
+
+<span class="nc" id="L133">                temp[i] = (byte) in.read();</span>
+
+            }
+
+<span class="nc" id="L137">        } catch (IOException e) {</span>
+<span class="nc" id="L138">            error();</span>
+<span class="nc" id="L139">        }</span>
+
+<span class="nc" id="L141">        return temp;</span>
+
+    }
+
+    @Override
+    /**
+     * Writes a string to the serial port.
+     * If an error occurs the {@link SerialHelper#error()} method is used.
+     *(Precondition: message &amp;#033; &amp;#061; &amp;quot;&amp;quot; &amp;amp;&amp;amp; message &amp;#033;&amp;#061; null)
+     */
+    public void writeLine(String message) {
+<span class="nc bnc" id="L152" title="All 6 branches missed.">        assert message != null &amp;&amp; !message.equals(&quot;&quot;);</span>
+<span class="nc" id="L153">        write(new String(message + &quot;\n&quot;).getBytes());</span>
+<span class="nc" id="L154">    }</span>
+
+    /**
+     * Write the given byte array in the serial console
+     * If an error occurs the application is closed.
+     */
+    private void write(byte[] bytes) {
+        try {
+<span class="nc" id="L162">            out.write(bytes);</span>
+<span class="nc" id="L163">            out.flush();</span>
+<span class="nc" id="L164">        } catch (IOException e) {</span>
+<span class="nc" id="L165">            System.exit(-1); // abort this must not be possible</span>
+<span class="nc" id="L166">        }</span>
+<span class="nc" id="L167">    }</span>
+
+
+    @Override
+    /**
+     * Read a string from the serial port.
+     * Wait until something is written in the serial port.
+     * It reads until it find the eol character.
+     * If an error occurs the {@link SerialHelper#error()} method is used.
+     */
+    public String readLine() {
+
+<span class="nc" id="L179">        int tempByte = 0;</span>
+
+<span class="nc" id="L181">        String tempRead = &quot;&quot;;</span>
+
+        while (true) { //until eol
+
+            try {
+<span class="nc" id="L186">                tempByte = in.read();</span>
+<span class="nc" id="L187">            } catch (IOException e) {</span>
+<span class="nc" id="L188">                error();</span>
+<span class="nc" id="L189">            }</span>
+
+<span class="nc bnc" id="L191" title="All 2 branches missed.">            if (tempByte == -1) continue; //InputStream receive strange characters</span>
+
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            if (tempByte == (int) '\n') break; //end of string</span>
+
+<span class="nc" id="L195">            tempRead += (char) tempByte;</span>
+        }
+<span class="nc" id="L197">        return tempRead;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

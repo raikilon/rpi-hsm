@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Sign.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-IoT</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.IoT.Commands</a> &gt; <span class="el_source">Sign.java</span></div><h1>Sign.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.IoT.Commands;
+
+import ch.bfh.ti.project1.RPiHSM.IoT.Utils.Constants;
+import org.keyczar.Signer;
+import org.keyczar.exceptions.KeyczarException;
+
+/**
+ * &lt;h1&gt;Sign&lt;/h1&gt;
+ * Sign a file using the &lt;a href=&quot;https://github.com/google/keyczar/wiki/OperationSign&quot;&gt;Keyczar Sign&lt;/a&gt;.
+ */
+public class Sign implements CommandI {
+
+    private SerialHelperI serialHelper;
+    private String keyPath;
+
+    /**
+     * Parses the received parameters.
+     *
+     * @param commands parameters for the file sign ([0] userPath, [1] name)
+     * @param serialHelper an instance of {@link SerialHelperI}
+     */
+<span class="fc" id="L22">    public Sign(String[] commands, SerialHelperI serialHelper) {</span>
+<span class="fc" id="L23">        this.serialHelper = serialHelper;</span>
+<span class="fc" id="L24">        keyPath = commands[0] + Constants.DIRECTORY + commands[1];</span>
+<span class="fc" id="L25">    }</span>
+
+
+
+    /**
+     * Tries to sign a file by using the &lt;a href=&quot;https://github.com/google/keyczar/wiki/OperationSign&quot;&gt;Keyczar Sign&lt;/a&gt;.
+     * Reads the file using {@link SerialHelperI#readFile()}, sign it using the primary key of the given key set
+     * and sends the signed file back using {@link SerialHelperI#sendFile(byte[])}.
+     *
+     * Prerequisites: the given key set must exist (to check it use {@link KeyExistence}) and it must been created with sign purpose.
+     */
+    @Override
+    public void execute() {
+
+<span class="fc" id="L39">        byte[] file = serialHelper.readFile();</span>
+
+        try {
+<span class="fc" id="L42">            Signer signer = new Signer(keyPath);</span>
+<span class="fc" id="L43">            byte[] data = signer.sign(file);</span>
+
+<span class="fc" id="L45">            serialHelper.ready();</span>
+
+<span class="fc" id="L47">            serialHelper.sendFile(data);</span>
+<span class="fc" id="L48">        } catch (KeyczarException e) {</span>
+<span class="fc" id="L49">            serialHelper.error();</span>
+<span class="fc" id="L50">        }</span>
+
+
+<span class="fc" id="L53">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

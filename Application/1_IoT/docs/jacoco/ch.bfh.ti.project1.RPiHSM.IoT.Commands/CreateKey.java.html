@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CreateKey.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-IoT</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.IoT.Commands</a> &gt; <span class="el_source">CreateKey.java</span></div><h1>CreateKey.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.IoT.Commands;
+
+import ch.bfh.ti.project1.RPiHSM.IoT.Utils.Constants;
+import org.keyczar.KeyczarTool;
+
+import java.io.File;
+
+/**
+ * &lt;h1&gt;CreateKey&lt;/h1&gt;
+ * Creates a new key by using the &lt;a href=&quot;https://github.com/google/keyczar/wiki/KeyczarTool&quot;&gt;KeyczarTool&lt;/a&gt;.
+ */
+public class CreateKey implements CommandI {
+
+    private SerialHelperI serialHelper;
+    private String keyPath;
+    private String status;
+    private int size;
+
+    /**
+     * Parses the received parameters.
+     *
+     * @param commands     parameters for the key creation ([0] userPath, [1] name, [2] status, [3] size)
+     * @param serialHelper an instance of {@link SerialHelperI}
+     */
+<span class="fc" id="L25">    public CreateKey(String[] commands, SerialHelperI serialHelper) {</span>
+<span class="fc" id="L26">        keyPath = commands[0] + Constants.DIRECTORY + commands[1];</span>
+<span class="fc" id="L27">        status = commands[2];</span>
+<span class="fc" id="L28">        size = Integer.parseInt(commands[3]);</span>
+<span class="fc" id="L29">        this.serialHelper = serialHelper;</span>
+
+<span class="fc" id="L31">    }</span>
+
+
+
+    /**
+     * Creates a new key using the &lt;a href=&quot;https://github.com/google/keyczar/wiki/KeyczarTool&quot;&gt;KeyczarTool&lt;/a&gt;.
+     * If the key cannot be created an Exception is thrown and it cannot be catch.
+     * To check if the command has been successful, the number of files in the key set directory are checked.
+     * If the creation is successful the {@link SerialHelperI#ready()} is called otherwise {@link SerialHelperI#error()}.
+     * Prerequisites: the given key set must exist (to check it use {@link KeyExistence}).
+     */
+    @Override
+    public void execute() {
+
+        //Check if key set already exists
+
+<span class="fc" id="L47">        File varTmpDir = new File(keyPath + &quot;//meta&quot;);</span>
+
+<span class="fc" id="L49">        long count = varTmpDir.getParentFile().list().length; // number of file before the key creation</span>
+
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        KeyczarTool.main(new String[]{&quot;addkey&quot;, &quot;--location=&quot; + keyPath, &quot;--status=&quot; + status, (size != 0) ? &quot;--size=&quot; + size : &quot;&quot;}); // if there are errors an exception is thrown and cannot be catch (external application)</span>
+
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (varTmpDir.getParentFile().list().length &lt;= count) {</span>
+<span class="fc" id="L54">            serialHelper.error(); //key set creation failed due to key size</span>
+        } else {
+<span class="fc" id="L56">            serialHelper.ready();</span>
+        }
+
+<span class="fc" id="L59">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

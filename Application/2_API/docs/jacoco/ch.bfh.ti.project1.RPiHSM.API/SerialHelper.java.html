@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SerialHelper.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-API</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.API</a> &gt; <span class="el_source">SerialHelper.java</span></div><h1>SerialHelper.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.API;
+
+import ch.bfh.ti.project1.RPiHSM.API.Exception.SerialPortException;
+import com.jamierf.rxtx.RXTXLoader;
+import gnu.io.*;
+
+import javax.naming.OperationNotSupportedException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+/**
+ * &lt;h1&gt;SerialHelper&lt;/h1&gt;
+ * Helper class that implement all {@link SerialHelperI} functions for the serial port.
+ */
+<span class="nc bnc" id="L16" title="All 2 branches missed.">public final class SerialHelper implements SerialHelperI {</span>
+
+    private SerialPort serialPort;
+    private InputStream in;
+    private OutputStream out;
+
+    /**
+     * Tries to connect to the serial port.
+     *
+     * @throws PortInUseException                when the port is already in use
+     * @throws UnsupportedCommOperationException when there is any serial port connected
+     * @throws SerialPortException               when problems occur with the serial port
+     */
+<span class="nc" id="L29">    public SerialHelper() throws PortInUseException, UnsupportedCommOperationException, SerialPortException {</span>
+
+        try {
+            //  System.setProperty(&quot;gnu.io.rxtx.NoVersionOutput&quot;,&quot;true&quot;); for the future version of the loader (rxtx 2.2pre2 or greater) this will hide the load message
+<span class="nc" id="L33">            RXTXLoader.load();</span>
+<span class="nc" id="L34">        } catch (IOException e) {</span>
+<span class="nc" id="L35">            throw new SerialPortException();</span>
+<span class="nc" id="L36">        }</span>
+
+<span class="nc" id="L38">        CommPortIdentifier portIdentifier = (CommPortIdentifier) CommPortIdentifier.getPortIdentifiers().nextElement();</span>
+
+        try {
+<span class="nc" id="L41">            CommPort commPort = portIdentifier.open(Constants.NAME, Constants.TIME_TO_WAIT);//new owner and time to wait</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">            if (commPort instanceof SerialPort) {</span>
+<span class="nc" id="L43">                serialPort = (SerialPort) commPort;</span>
+
+<span class="nc" id="L45">                serialPort.setSerialPortParams(Constants.CONNECTION_SPEED, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);</span>
+            } else {
+<span class="nc" id="L47">                throw new SerialPortException();</span>
+            }
+<span class="nc" id="L49">        }catch (UnsatisfiedLinkError e){</span>
+<span class="nc" id="L50">            throw new SerialPortException();</span>
+<span class="nc" id="L51">        }</span>
+        try {
+<span class="nc" id="L53">            in = serialPort.getInputStream();</span>
+<span class="nc" id="L54">            out = serialPort.getOutputStream();</span>
+<span class="nc" id="L55">        } catch (IOException e) {</span>
+<span class="nc" id="L56">            throw new SerialPortException();</span>
+<span class="nc" id="L57">        }</span>
+<span class="nc" id="L58">    }</span>
+
+
+    @Override
+    /**
+     * Reads a string from the serial port.
+     * @return true if the read string contains the code {@link Constants#SUCCESS}.
+     * @throws OperationNotSupportedException if an error occurs.
+     */
+    public boolean status() throws OperationNotSupportedException {
+<span class="nc" id="L68">        return readLine().contains(Constants.SUCCESS);</span>
+    }
+
+
+    @Override
+    /**
+     * Sends a file over the serial port.
+     * Uses the {@link SerialHelper} writeLine and write methods.
+     * @throws FileNotFoundException if the given file path do not exist.
+     * @throws OperationNotSupportedException if an error occurs.
+     */
+    public void sendFile(String path) throws FileNotFoundException, OperationNotSupportedException {
+        byte[] fileBytes;
+        try {
+<span class="nc" id="L82">            fileBytes = Files.readAllBytes(Paths.get(path));</span>
+<span class="nc" id="L83">        } catch (IOException e) {</span>
+<span class="nc" id="L84">            throw new FileNotFoundException();</span>
+<span class="nc" id="L85">        }</span>
+
+<span class="nc" id="L87">        writeLine(Integer.toString(fileBytes.length));</span>
+
+<span class="nc" id="L89">        write(fileBytes);</span>
+<span class="nc" id="L90">    }</span>
+
+
+    @Override
+    /**
+     * Reads a file from the serial port.
+     * @throws FileNotFoundException if the given file path do not exist.
+     * @throws OperationNotSupportedException if an error occurs.
+     */
+    public void readFile(String path) throws FileNotFoundException, OperationNotSupportedException {
+
+<span class="nc" id="L101">        String input = readLine();</span>
+<span class="nc" id="L102">        Long length = Long.parseLong(input);</span>
+        int temp;
+<span class="nc" id="L104">        try (FileOutputStream fileOutputStream = new FileOutputStream(path, false)) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">            for (long i = 0; i &lt; length; i++) {</span>
+<span class="nc" id="L106">                temp = in.read();</span>
+<span class="nc" id="L107">                fileOutputStream.write(temp);</span>
+            }
+<span class="nc bnc" id="L109" title="All 8 branches missed.">        } catch (IOException e) {</span>
+<span class="nc" id="L110">            throw new FileNotFoundException();</span>
+<span class="nc" id="L111">        }</span>
+
+<span class="nc" id="L113">    }</span>
+
+
+    @Override
+    /**
+     * Close the serial port connection.
+     * @throws SerialPortException if an error occurs in the closing operation.
+     */
+    public void closeConnection() throws SerialPortException {
+        try {
+<span class="nc" id="L123">            in.close();</span>
+<span class="nc" id="L124">            out.close();</span>
+<span class="nc" id="L125">        } catch (IOException e) {</span>
+<span class="nc" id="L126">            throw new SerialPortException();</span>
+<span class="nc" id="L127">        }</span>
+<span class="nc" id="L128">        serialPort.close();</span>
+<span class="nc" id="L129">    }</span>
+
+
+    @Override
+    /**
+     * Writes a string to the serial port.
+     * @throws OperationNotSupportedException if an error occurs.
+     *(Precondition: message &amp;#033; &amp;#061; &amp;quot;&amp;quot; &amp;amp;&amp;amp; message &amp;#033;&amp;#061; null)
+     */
+    public void writeLine(String message) throws OperationNotSupportedException {
+<span class="nc bnc" id="L139" title="All 6 branches missed.">        assert message != null &amp;&amp; !message.equals(&quot;&quot;);</span>
+<span class="nc" id="L140">        write(new String(message + &quot;\n&quot;).getBytes());</span>
+<span class="nc" id="L141">    }</span>
+
+    /**
+     * Write the given byte array in the serial console
+     *
+     * @throws OperationNotSupportedException if an error occurs.
+     */
+    private void write(byte[] bytes) throws OperationNotSupportedException {
+        try {
+<span class="nc" id="L150">            out.write(bytes);</span>
+<span class="nc" id="L151">            out.flush();</span>
+<span class="nc" id="L152">        } catch (IOException e) {</span>
+<span class="nc" id="L153">            throw new OperationNotSupportedException();</span>
+<span class="nc" id="L154">        }</span>
+<span class="nc" id="L155">    }</span>
+
+
+    @Override
+    /**
+     * Reads a string from the serial port.
+     * Wait until something is written in the serial port.
+     * It reads until it find the eol character.
+     * If an error occurs an {@link OperationNotSupportedException} is thrown.
+     */
+    public String readLine() throws OperationNotSupportedException {
+        int tempByte;
+<span class="nc" id="L167">        String tempRead = &quot;&quot;;</span>
+        while (true) {
+            try {
+<span class="nc" id="L170">                tempByte = in.read();</span>
+<span class="nc" id="L171">            } catch (IOException e) {</span>
+<span class="nc" id="L172">                throw new OperationNotSupportedException();</span>
+<span class="nc" id="L173">            }</span>
+
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            if (tempByte == -1) continue; //InputStream receive strange characters</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            if (tempByte == (int) '\n') break; //end of string</span>
+<span class="nc" id="L177">            tempRead += (char) tempByte;</span>
+        }
+<span class="nc" id="L179">        return tempRead;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>PromoteKey.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-IoT</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.IoT.Commands</a> &gt; <span class="el_source">PromoteKey.java</span></div><h1>PromoteKey.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.IoT.Commands;
+
+import ch.bfh.ti.project1.RPiHSM.IoT.Utils.Constants;
+import ch.bfh.ti.project1.RPiHSM.IoT.Utils.JSONUtils;
+import org.keyczar.KeyczarTool;
+
+/**
+ * &lt;h1&gt;PromoteKey&lt;/h1&gt;
+ * Promotes a key by using the &lt;a href=&quot;https://github.com/google/keyczar/wiki/KeyczarTool&quot;&gt;KeyczarTool&lt;/a&gt;.
+ */
+public class PromoteKey implements CommandI {
+
+    private SerialHelperI serialHelper;
+    private String keyPath;
+    private int version;
+
+    /**
+     * Parses the received parameters.
+     *
+     * @param commands  parameters for the key promotion ([0] userPath, [1] name, [2] version)
+     * @param serialHelper an instance of {@link SerialHelperI}
+     */
+<span class="fc" id="L23">    public PromoteKey(String[] commands, SerialHelperI serialHelper) {</span>
+<span class="fc" id="L24">        this.serialHelper = serialHelper;</span>
+<span class="fc" id="L25">        keyPath = commands[0] + Constants.DIRECTORY + commands[1];</span>
+<span class="fc" id="L26">        version = Integer.parseInt(commands[2]);</span>
+<span class="fc" id="L27">    }</span>
+
+
+    /**
+     * Promotes a key in a given key set using the &lt;a href=&quot;https://github.com/google/keyczar/wiki/KeyczarTool&quot;&gt;KeyczarTool&lt;/a&gt;.
+     * If the status of the key is INACTIVE or ACTIVE the {@link SerialHelperI#ready()} is called otherwise {@link SerialHelperI#error()}.
+     * Prerequisites: the given key set and key version must exist.
+     */
+    @Override
+    public void execute() {
+
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (JSONUtils.checkKeySetStatus(keyPath, version, Constants.ACTIVE, Constants.INACTIVE)) {</span>
+<span class="fc" id="L39">            KeyczarTool.main(new String[]{Constants.PROMOTE, &quot;--location=&quot; + keyPath, &quot;--version=&quot; + version});</span>
+<span class="fc" id="L40">            serialHelper.ready();</span>
+        } else
+<span class="fc" id="L42">            serialHelper.error();</span>
+<span class="fc" id="L43">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

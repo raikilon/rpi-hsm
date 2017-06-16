@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CreateKeySet.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-IoT</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.IoT.Commands</a> &gt; <span class="el_source">CreateKeySet.java</span></div><h1>CreateKeySet.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.IoT.Commands;
+
+import ch.bfh.ti.project1.RPiHSM.IoT.Utils.Constants;
+import org.keyczar.KeyczarTool;
+
+import java.io.File;
+
+/**
+ * &lt;h1&gt;CreateKeySet&lt;/h1&gt;
+ * Creates a new key set by using the &lt;a href=&quot;https://github.com/google/keyczar/wiki/KeyczarTool&quot;&gt;KeyczarTool&lt;/a&gt;.
+ */
+public class CreateKeySet implements CommandI {
+
+    private SerialHelperI serialHelper;
+    private String keyPath;
+    private String purpose;
+    private String name;
+    private String algorithm;
+
+    /**
+     * Parses the received parameters.
+     *
+     * @param commands  parameters for the key set creation  ([0] userPath, [1] name, [2] purpose, [3] algorithm)
+     * @param serialHelper an instance of {@link SerialHelperI}
+     */
+<span class="fc" id="L26">    public CreateKeySet(String[] commands, SerialHelperI serialHelper) {</span>
+<span class="fc" id="L27">        keyPath = commands[0] + Constants.DIRECTORY + commands[1];</span>
+<span class="fc" id="L28">        name = commands[1];</span>
+<span class="fc" id="L29">        purpose = commands[2];</span>
+<span class="pc bpc" id="L30" title="1 of 4 branches missed.">        algorithm = ((commands[3].equals(&quot;dsa&quot;)) ? &quot;--asymmetric=dsa&quot; : (commands[3].equals(&quot;rsa&quot;)) ? &quot;--asymmetric=rsa&quot; : &quot;&quot;);</span>
+<span class="fc" id="L31">        this.serialHelper = serialHelper;</span>
+<span class="fc" id="L32">    }</span>
+
+
+    /**
+     * Creates a new key set using the &lt;a href=&quot;https://github.com/google/keyczar/wiki/KeyczarTool&quot;&gt;KeyczarTool&lt;/a&gt;.
+     * If the key set cannot be created an Exception is thrown and it cannot be catch.
+     * If the key set already exists the {@link SerialHelperI#error()} is called otherwise {@link SerialHelperI#ready()}.
+     */
+    @Override
+    public void execute() {
+        //Create a file with the given path
+<span class="fc" id="L43">        File theDir = new File(keyPath);</span>
+
+        // If the directory does not exist, create it
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (!theDir.exists()) {</span>
+            try {
+<span class="fc" id="L48">                theDir.mkdir();</span>
+
+
+<span class="fc" id="L51">                KeyczarTool.main(new String[]{&quot;create&quot;, &quot;--location=&quot; + keyPath, &quot;--purpose=&quot; + purpose, &quot;--name=&quot; + name, algorithm});</span>
+
+<span class="fc" id="L53">                serialHelper.ready();</span>
+
+<span class="nc" id="L55">            } catch (SecurityException e) { //cannot be tested a security exception occurs if you do not have the right to write in the destination folder.</span>
+<span class="nc" id="L56">                serialHelper.error();</span>
+<span class="pc" id="L57">            }</span>
+
+        } else {
+<span class="fc" id="L60">            serialHelper.error();</span>
+        }
+<span class="fc" id="L62">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

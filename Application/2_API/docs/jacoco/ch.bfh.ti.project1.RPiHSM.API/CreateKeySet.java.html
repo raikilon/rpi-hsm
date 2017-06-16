@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CreateKeySet.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-API</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.API</a> &gt; <span class="el_source">CreateKeySet.java</span></div><h1>CreateKeySet.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.API;
+
+import javax.naming.OperationNotSupportedException;
+
+/**
+ * &lt;h1&gt;CreateKeySet&lt;/h1&gt;
+ * Ask the IoT application using the {@link SerialHelperI} to create a new key set with the given parameters.
+ */
+public final class CreateKeySet {
+
+    private SerialHelperI serialHelper;
+    private String[] data;
+
+
+    /**
+     * Sets {@link SerialHelperI} instance to communicate with the IoT application and the new key set parameters.
+     *
+     * @param serialHelper instance of a {@link SerialHelperI}
+     * @param userPath     home path of the IoT application user
+     * @param purpose      new key set purpose
+     * @param name         name of the new key set
+     * @param algorithm    specific algorithm for the new key set. To have the default use a empty string
+     *                     Prerequisites: the given purpose must be &quot;crypt&quot; or &quot;sign&quot;. The given algorithm must be &quot;dsa&quot; or &quot;rsa&quot;.
+     *                     (the the &quot;dsa&quot; algorithm can be used only with the sign purpose).
+     */
+<span class="fc" id="L26">    public CreateKeySet(SerialHelperI serialHelper, String userPath, String purpose, String name, String algorithm) {</span>
+<span class="fc" id="L27">        this.serialHelper = serialHelper;</span>
+<span class="fc" id="L28">        data = new String[]{Constants.CREATEKEYSET, userPath, name, purpose, algorithm};</span>
+<span class="fc" id="L29">    }</span>
+
+    /**
+     * Ask to the IoT application to create a new key set with the given parameters.
+     *
+     * @return true if the key set has been created, false if the key set already exist or if the creation has failed
+     * @throws OperationNotSupportedException if an error occurs in the {@link SerialHelperI}
+     */
+    public boolean create() throws OperationNotSupportedException {
+<span class="fc" id="L38">        serialHelper.writeLine(String.join(&quot; &quot;, data));</span>
+
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (!serialHelper.status()) {</span>
+<span class="fc" id="L41">            return false;</span>
+        }
+
+<span class="fc" id="L44">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

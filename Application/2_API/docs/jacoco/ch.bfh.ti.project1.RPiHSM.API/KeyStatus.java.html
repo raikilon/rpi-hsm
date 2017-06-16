@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>KeyStatus.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">RPiHSM-API</a> &gt; <a href="index.source.html" class="el_package">ch.bfh.ti.project1.RPiHSM.API</a> &gt; <span class="el_source">KeyStatus.java</span></div><h1>KeyStatus.java</h1><pre class="source lang-java linenums">package ch.bfh.ti.project1.RPiHSM.API;
+
+import javax.naming.OperationNotSupportedException;
+
+/**
+ * &lt;h1&gt;KeyStatus&lt;/h1&gt;
+ * Ask the IoT application using the {@link SerialHelperI} to promote, demote or revoke a key with the given parameters.
+ */
+public final class KeyStatus {
+
+    private SerialHelperI serialHelper;
+    private String userPath;
+    private String name;
+    private String version;
+
+    /**
+     * Sets {@link SerialHelperI} instance to communicate with the IoT application and key status operation parameters.
+     *
+     * @param serialHelper an instance of {@link SerialHelperI}
+     * @param userPath     home path of the IoT application user
+     * @param name         name of the key set
+     * @param version      key version where execute the operation
+     */
+<span class="fc" id="L24">    public KeyStatus(SerialHelperI serialHelper, String userPath, String name, int version) {</span>
+<span class="fc" id="L25">        this.serialHelper = serialHelper;</span>
+<span class="fc" id="L26">        this.userPath = userPath;</span>
+<span class="fc" id="L27">        this.name = name;</span>
+<span class="fc" id="L28">        this.version = Integer.toString(version);</span>
+<span class="fc" id="L29">    }</span>
+
+    /**
+     * Checks if the key set with the {@link CreateKey#name} exists and if yes, it ask to the IoT application to demote the given key version of the given key set.
+     *
+     * @return true if the key has been demoted, false otherwise
+     * @throws OperationNotSupportedException if an error occurs in the {@link SerialHelperI}
+     */
+    public boolean demote() throws OperationNotSupportedException {
+<span class="fc" id="L38">        String[] data = {Constants.DEMOTE, userPath, name, version};</span>
+<span class="fc" id="L39">        return execute(String.join(&quot; &quot;, data));</span>
+    }
+
+    /**
+     * Checks if the key set with the {@link CreateKey#name} exists and if yes, it ask to the IoT application to promote the given key version of the given key set.
+     *
+     * @return true if the key has been promoted, false otherwise
+     * @throws OperationNotSupportedException if an error occurs in the {@link SerialHelperI}
+     */
+    public boolean promote() throws OperationNotSupportedException {
+<span class="fc" id="L49">        String[] data = {Constants.PROMOTE, userPath, name, version};</span>
+<span class="fc" id="L50">        return execute(String.join(&quot; &quot;, data));</span>
+    }
+
+    /**
+     * Checks if the key set with the {@link CreateKey#name} exists and if yes, it ask to the IoT application to revoke the given key version of the given key set.
+     *
+     * @return true if the key has been revoked, false otherwise
+     * @throws OperationNotSupportedException if an error occurs in the {@link SerialHelperI}
+     */
+    public boolean revoke() throws OperationNotSupportedException {
+<span class="fc" id="L60">        String[] data = {Constants.REVOKE, userPath, name, version};</span>
+<span class="fc" id="L61">        return execute(String.join(&quot; &quot;, data));</span>
+    }
+
+    /**
+     * Called by the {@link KeyStatus#promote()} ()}, {@link KeyStatus#demote()} and {@link KeyStatus#revoke()} ()} methods. It check if the key set
+     * with the {@link CreateKey#name} exists and if yes, it ask to the IoT application to promote, demote or revoke the given key version of the given key set.
+     *
+     * @param command data the array defined in {@link KeyStatus#demote()}, {@link KeyStatus#promote()} or {@link KeyStatus#revoke()} as string
+     * @return true if the demotion, promotion or revoke have been successful, false otherwise
+     * @throws OperationNotSupportedException if an error occurs in the {@link SerialHelperI}
+     */
+    private boolean execute(String command) throws OperationNotSupportedException {
+
+<span class="fc" id="L74">        KeyExistence ke = new KeyExistence(serialHelper, userPath, name);</span>
+
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (ke.keyexist()) {</span>
+<span class="fc" id="L77">            serialHelper.writeLine(command);</span>
+
+<span class="fc bfc" id="L79" title="All 2 branches covered.">            if (!serialHelper.status()) {</span>
+<span class="fc" id="L80">                return false;</span>
+            }
+
+<span class="fc" id="L83">            return true;</span>
+        } else {
+<span class="fc" id="L85">            return false;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
